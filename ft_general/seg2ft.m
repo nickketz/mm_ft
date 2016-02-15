@@ -171,7 +171,7 @@ end
 %   error('Expecting only one eventValue.');
 % end
 
-[~,hn] = system('echo $HOSTNAME');
+[~,hn] = system('echo $SLURM_JOBID');
 subhnstr = sprintf('%s-%s',subject,hn);
 
 if ~iscell(session)

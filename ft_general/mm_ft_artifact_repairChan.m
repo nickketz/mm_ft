@@ -16,10 +16,15 @@ cfgChannelRepair.elecfile = elecfile;
 cfgChannelRepair.continuous = contData;
 cfgChannelRepair.blocksize = blocksize;
 
+[status,taskstr] = system('echo $SLURM_JOBID');
+if ~status    taskstr = ''; end
+
 % viewmode?
 repair_viewmode = [];
 while isempty(repair_viewmode) || (repair_viewmode ~= 0 && repair_viewmode ~= 1)
-  repair_viewmode = input('\nDo you want to plot in butterfly (1) or vertical (0) mode? (1 or 0, then press ''return''):\n\n');
+    repair_viewmode = questdlg('Plot style?',taskstr,'butterfly','vertical','buffterfly');
+    repair_viewmode = strcmp('butterfly',repair_viewmode);
+    %repair_viewmode = input('\nDo you want to plot in butterfly (1) or vertical (0) mode? (1 or 0, then press ''return''):\n\n');
 end
 if repair_viewmode
   cfgChannelRepair.viewmode = 'butterfly';
@@ -40,7 +45,9 @@ end
 % subset?
 repair_chanNum = [];
 while isempty(repair_chanNum) || (repair_chanNum ~= 0 && repair_chanNum ~= 1)
-  repair_chanNum = input('\nDo you want to plot all channels (1) or a particular subset of channels (0)? (1 or 0, then press ''return''):\n\n');
+    repair_chanNum = questdlg('Do you want to plot all channels',taskstr,'yes','no','yes');
+    repair_chanNum = strcmp('yes',repair_chanNum);
+    %repair_chanNum = input('\nDo you want to plot all channels (1) or a particular subset of channels (0)? (1 or 0, then press ''return''):\n\n');
 end
 if repair_chanNum
   cfgChannelRepair.channel = 'all';
@@ -60,7 +67,9 @@ pause(1);
 
 rejArt_repair_really = [];
 while isempty(rejArt_repair_really) || (rejArt_repair_really ~= 0 && rejArt_repair_really ~= 1)
-  rejArt_repair_really = input('\nWere there channels to repair? (1 or 0, then press ''return''):\n\n');
+    rejArt_repair_really = questdlg('Were there channels to repair?',taskstr,'yes','no','no');
+    rejArt_repair_really = strcmp('yes',rejArt_repair_really);
+    %rejArt_repair_really = input('\nWere there channels to repair? (1 or 0, then press ''return''):\n\n');
 end
 
 if rejArt_repair_really
