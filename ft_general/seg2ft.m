@@ -171,6 +171,9 @@ end
 %   error('Expecting only one eventValue.');
 % end
 
+[~,hn] = system('echo $HOSTNAME');
+subhnstr = sprintf('%s-%s',subject,hn);
+
 if ~iscell(session)
   session = {session};
 end
@@ -405,7 +408,9 @@ for ses = 1:length(session)
       while keepRepairingChannels
         rejArt_repair = [];
         while isempty(rejArt_repair) || (rejArt_repair ~= 0 && rejArt_repair ~= 1)
-          rejArt_repair = input('\nDo you want to see whether there are channels to repair? (1 or 0, then press ''return''):\n\n');
+            rejArt_repair = questdlg('Do you want to see whether there are channels to repair?',subhnstr,'yes','no','no');
+            rejArt_repair = strcmp('yes',rejArt_repair);
+            %rejArt_repair = input('\nDo you want to see whether there are channels to repair? (1 or 0, then press ''return''):\n\n');
         end
         if rejArt_repair
           [data,badChan] = mm_ft_artifact_repairChan(data,badChan,elecfile,'yes',[-100 100],30);
@@ -553,7 +558,9 @@ for ses = 1:length(session)
         
         save_resumeICAComp = [];
         while isempty(save_resumeICAComp) || (save_resumeICAComp ~= 0 && save_resumeICAComp ~= 1)
-          save_resumeICAComp = input('\nDo you want to save the ICA compents resuming file? This file is quite large, but you will have the option to delete it automatically. (1=yes or 0=no, then press ''return''):\n\n');
+            save_resumeICAComp = questdlg('Do you want to save the ICA compents resuming file?',subhnstr,'yes','no','no');
+            save_resumeICAComp = strcmp('yes',save_resumeICAComp);
+            %save_resumeICAComp = input('\nDo you want to save the ICA compents resuming file? This file is quite large, but you will have the option to delete it automatically. (1=yes or 0=no, then press ''return''):\n\n');
         end
         if save_resumeICAComp
           fprintf('\nBacking up ICA component data to %s.\n',resumeICACompContinuous_file);
@@ -603,7 +610,8 @@ for ses = 1:length(session)
           %input(sprintf('\t3. Type component numbers to reject (on a single line) and press ''return'',\n\teven if these instructions move up due to output while browsing components (e.g., ''1, 4, 11'' without quotes):\n\n'),'s');
           msg = sprintf('%d, ',componentsToReject(:));
           msg = sprintf('Reject components: \n%s\b\b?\n(1 or 0, then press ''return'')',msg);
-          rej_comp = input(msg);
+          rej_comp = questdlg(msg, subhnstr,'yes','no','no'); rej_comp = strcmp(rej_comp,'yes');          
+          %rej_comp = input(msg);
           % reject the bad components
           if rej_comp
               cfg_ica = [];
@@ -637,7 +645,10 @@ for ses = 1:length(session)
         
         done_with_ica = [];
         while isempty(done_with_ica) || (done_with_ica ~= 0 && done_with_ica ~= 1)
-          done_with_ica = input('\nAre you happy with your post-ICA results? 1 to move on to next step, 0 to redo ICA component rejection. (1 or 0, then press ''return''):\n\n');
+            msg = '\nAre you happy with your post-ICA results?';
+            done_with_ica = questdlg(msg,subhnstr,'yes','no-redo','no-redo');
+            done_with_ica = strcmp(done_with_ica,'yes');
+            %done_with_ica = input('\nAre you happy with your post-ICA results? 1 to move on to next step, 0 to redo ICA component rejection. (1 or 0, then press ''return''):\n\n');
         end
         
         if done_with_ica
@@ -649,7 +660,9 @@ for ses = 1:length(session)
             % if we saved resumeICACompContinuous_file, see if we should delete it
             rm_resumeICAComp = [];
             while isempty(rm_resumeICAComp) || (rm_resumeICAComp ~= 0 && rm_resumeICAComp ~= 1)
-              rm_resumeICAComp = input('\nDo you want to remove the ICA compents resuming file? This file is quite large, so this is recommended. (1=yes or 0=no, then press ''return''):\n\n');
+                rm_resumeICAComp = questdlg('Do you want to remove the ICA compents resuming file?',subhnstr,'yes','no','no');
+                rm_resumeICAComp = strcmp(rm_resumeICAComp,'yes');
+                %rm_resumeICAComp = input('\nDo you want to remove the ICA compents resuming file? This file is quite large, so this is recommended. (1=yes or 0=no, then press ''return''):\n\n');
             end
             if rm_resumeICAComp
               fprintf('\nDeleting %s...',resumeICACompContinuous_file);
