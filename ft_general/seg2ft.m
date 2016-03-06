@@ -577,75 +577,50 @@ for ses = 1:length(session)
       keepChoosingICAcomps = true;
       while keepChoosingICAcomps
           [comp,cfg_sasica] = deevSASICA(comp,data,ana,dirs);
-          uiwait(gcf);
-%           
-%         cfg_ica = [];
-%         cfg_ica.viewmode = 'component';
-%         cfg_ica.continuous = 'yes';
-%         % number of seconds to display
-%         cfg_ica.blocksize = 120;
-%         %cfg_ica.blocksize = 30;
-%         %cfg_ica.blocksize = 10;
-%         %cfg_ica.channels = 1:nComponents;
-%         cfg_ica.plotlabels = 'yes';
-%         cfg_ica.layout = elecfile;
-%         cfg_ica.elecfile = elecfile;
-%         %cfg_ica.ylim = [-1500 1500];
-%         ft_databrowser(cfg_ica,comp);
-%         % bug when calling rejectartifact right after databrowser, pause first
-%         pause(1);
-%         
-%         fprintf('Processing%s...\n',sprintf(repmat(' ''%s''',1,length(eventValue_orig)),eventValue_orig{:}));
-%         %fprintf('\n\nViewing the first %d components.\n',nComponents);
-%         fprintf('ICA component browsing (showing %d seconds of data):\n',cfg_ica.blocksize);
-%         fprintf('\t1. Look for patterns that are indicative of artifacts.\n');
-%         fprintf('\t\tPress the ''channel >'' button to see the next set of components.\n');
-%         fprintf('\t\tComponents may not be numbered, so KEEP TRACK of where you are (top component has the lowest number). Write down component numbers for rejection.\n');
-%         fprintf('\t2. Manually close the components window when finished browsing.\n');
-%         
-        rej_comp = [];
-        while isempty(rej_comp) || (rej_comp ~= 0 && rej_comp ~= 1)
-          % prompt the user for the component numbers to reject
-          componentsToReject = find(comp.reject.gcompreject);
-          %input(sprintf('\t3. Type component numbers to reject (on a single line) and press ''return'',\n\teven if these instructions move up due to output while browsing components (e.g., ''1, 4, 11'' without quotes):\n\n'),'s');
-          msg = sprintf('%d, ',componentsToReject(:));
-          msg = sprintf('Reject components: \n%s\b\b?\n(1 or 0, then press ''return'')',msg);
-          rej_comp = questdlg(msg, subhnstr,'yes','no','no'); rej_comp = strcmp(rej_comp,'yes');          
-          %rej_comp = input(msg);
-          % reject the bad components
-          if rej_comp
+          
+          if isfield(comp,'reject') && sum(comp.reject.gcompreject)>0
               cfg_ica = [];
-              cfg_ica.component = componentsToReject;% str2double(regexp(componentsToReject,'\d*','match')');
+              componentsToReject = find(comp.reject.gcompreject);
+              cfg_ica.component = componentsToReject;
+              msg = sprintf('%d, ',componentsToReject(:));
+              msg = sprintf('Rejecting components: \n%s\b\b',msg);
+              fprintf('\n\n%s\n\n',msg);
               data_ica_rej = ft_rejectcomponent(cfg_ica, comp, data);
           else
-              data_ica_rej = data;
+              warndlg('No components marked as rejected');
           end
-        end
-        
-        cfg_browse = [];
-        %cfg_browse.viewmode = 'butterfly';
-        cfg_browse.viewmode = 'vertical';
-        cfg_browse.continuous = 'yes';
-        cfg_browse.blocksize = 120;
-        cfg_browse.elecfile = elecfile;
-        cfg_browse.plotlabels = 'some';
-        cfg_browse.ylim = [-100 100];
-        
-        fprintf('\nViewing continuous data (showing %d seconds of data)...\n',cfg_browse.blocksize);
-        fprintf('\tUse arrows to move to next trial.\n');
-        if strcmp(cfg_browse.viewmode,'butterfly')
-          fprintf('\tUse the ''i'' key and mouse to identify channels in the data browser.\n');
-        end
-        fprintf('\tUse the ''q'' key to quit the data browser when finished.\n');
-        fprintf('\tPress / (or any key besides q, t, i, h, c, v, or a number) to view the help screen.\n\n');
-        
-        ft_databrowser(cfg_browse, data_ica_rej);
-        % bug when calling rejectartifact right after databrowser, pause first
-        pause(1);
+
+          
+          if exist('data_ica_rej','var')
+              cfg_browse = [];
+              %cfg_browse.viewmode = 'butterfly';
+              cfg_browse.viewmode = 'vertical';
+              cfg_browse.continuous = 'yes';
+              cfg_browse.blocksize = 1000;
+              cfg_browse.elecfile = elecfile;
+              cfg_browse.plotlabels = 'some';
+              cfg_browse.ylim = [-100 100];
+              
+              fprintf('\nViewing continuous data (showing %d seconds of data)...\n',cfg_browse.blocksize);
+              fprintf('\tUse arrows to move to next trial.\n');
+              if strcmp(cfg_browse.viewmode,'butterfly')
+                  fprintf('\tUse the ''i'' key and mouse to identify channels in the data browser.\n');
+              end
+              fprintf('\tUse the ''q'' key to quit the data browser when finished.\n');
+              fprintf('\tPress / (or any key besides q, t, i, h, c, v, or a number) to view the help screen.\n\n');
+              
+              ft_databrowser(cfg_browse, data_ica_rej);  
+              h = gcf;
+              while ishandle(h)
+                  uiwait(h);
+              end
+              % bug when calling rejectartifact right after databrowser, pause first
+              pause(1);
+          end
         
         done_with_ica = [];
         while isempty(done_with_ica) || (done_with_ica ~= 0 && done_with_ica ~= 1)
-            msg = '\nAre you happy with your post-ICA results?';
+            msg = 'Are you happy with your post-ICA results?';
             done_with_ica = questdlg(msg,subhnstr,'yes','no-redo','no-redo');
             done_with_ica = strcmp(done_with_ica,'yes');
             %done_with_ica = input('\nAre you happy with your post-ICA results? 1 to move on to next step, 0 to redo ICA component rejection. (1 or 0, then press ''return''):\n\n');
